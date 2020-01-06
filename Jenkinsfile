@@ -10,7 +10,7 @@ node {
 	stage('Build') {
 		nodejs(nodeJSInstallationName: 'NodeJS') { 
 			sh label: '', script: '''
-			cd basics
+			cd src
 			npm install --only=dev
 			'''
 			}
@@ -18,7 +18,7 @@ node {
 	stage('Test') {
 		nodejs(nodeJSInstallationName: 'NodeJS') { 
 			sh label: '', script: '''
-			cd basics
+			cd src
 			npm test
 		'''
 		}
