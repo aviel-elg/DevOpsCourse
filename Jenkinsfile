@@ -8,10 +8,20 @@ node {
 		git 'https://github.com/aviel98/DevOpsCourse.git'
 	}
 	stage('Build') {
-		sh 'npm install'
+		nodejs(nodeJSInstallationName: 'NodeJS') { 
+			sh label: '', script: '''
+			cd basics
+			npm install --only=dev
+			'''
+			}
 	}
 	stage('Test') {
-		sh 'npm test'
+		nodejs(nodeJSInstallationName: 'NodeJS') { 
+			sh label: '', script: '''
+			cd basics
+			npm test
+		'''
+		}
 	}
 	stage('Building image') {
         docker.withRegistry( registry, registryCredential ) {
