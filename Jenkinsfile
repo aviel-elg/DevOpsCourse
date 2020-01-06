@@ -29,5 +29,6 @@ node {
 			newApp = docker.build(buildName)
 			newApp.push();
         }
+		// test
 	}
 }
