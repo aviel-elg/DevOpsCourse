@@ -11,6 +11,7 @@ node {
 		nodejs(nodeJSInstallationName: 'NodeJS') { 
 			sh label: '', script: '''
 			cd src
+			npm audit fix
 			npm install --only=dev
 			'''
 			}
@@ -18,7 +19,6 @@ node {
 	stage('Test') {
 		nodejs(nodeJSInstallationName: 'NodeJS') { 
 			sh label: '', script: '''
-			cd src
 			npm test
 		'''
 		}
