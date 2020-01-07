@@ -1,33 +1,31 @@
 node {
-    def newApp
-    def registry = 'https://registry-1.docker.io/v2/'
-	def imagename = "aviel98/aviel_todo_java_app"
-    def registryCredential = 'bdf53ea7-030e-4b20-8f81-640f53ab341a'
-	
-	stage('Git') {
-		git 'https://github.com/aviel98/DevOpsCourse.git'
-	}
-	stage('Build') {
-		nodejs(nodeJSInstallationName: 'NodeJS') { 
-			sh label: '', script: '''
-			cd src
-			npm audit fix
-			npm install --only=dev
-			'''
-			}
-	}
-	stage('Test') {
-		nodejs(nodeJSInstallationName: 'NodeJS') { 
-			sh label: '', script: '''
-			npm test
-		'''
-		}
-	}
-	stage('Building image') {
-        docker.withRegistry( registry, registryCredential ) {
-		    def buildName = imagename + ":$BUILD_NUMBER"
-			newApp = docker.build(buildName)
-			newApp.push();
-        }
-	}
-}
+   def commit_id
+   stage('Preparation') {
+     checkout scm
+     sh "git rev-parse --short HEAD > .git/commit-id"
+     commit_id = readFile('.git/commit-id').trim()
+   }
+   stage('test') {
+     def myTestContainer = docker.image('node:4.6')
+     myTestContainer.pull()
+     myTestContainer.inside {
+       sh 'npm install --only=dev'
+       sh 'npm test'
+     }
+   }
+   stage('test with a DB') {
+     def mysql = docker.image('mysql').run("-e MYSQL_ALLOW_EMPTY_PASSWORD=yes") 
+     def myTestContainer = docker.image('node:4.6')
+     myTestContainer.pull()
+     myTestContainer.inside("--link ${mysql.id}:mysql") { // using linking, mysql will be available at host: mysql, port: 3306
+          sh 'npm install --only=dev' 
+          sh 'npm test'                     
+     }                                   
+     mysql.stop()
+   }                                     
+   stage('docker build/push') {            
+     docker.withRegistry('https://index.docker.io/v1/', 'aviel98') {
+       def app = docker.build("aviel98/aviel_todo_java_app:${commit_id}", '.').push()
+     }                                     
+   }                                       
+}                                
