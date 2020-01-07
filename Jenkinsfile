@@ -1,5 +1,5 @@
-node {
-   agent "docker-slave"
+node(label 'docker-slave') {
+  //  agent "docker-slave"
    def commit_id
    stage('Preparation') {
      checkout scm
